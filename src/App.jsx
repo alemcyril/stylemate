@@ -1,33 +1,35 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ProtectedRoute from "./components/ProtectedRoute";
-import LandingPage from "./pages/LandingPage";
-import AuthPage from "./pages/AuthPage";
-import Dashboard from "./pages/Dashboard";
-import Profile from "./pages/Profile";
-import Settings from "./pages/Settings";
+import { BrowserRouter as Router } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { WardrobeProvider } from "./context/WardrobeContext";
+import { ChatbotProvider } from "./context/ChatbotContext";
+import { UploadProvider } from "./context/UploadContext";
+import { NotificationProvider } from "./context/NotificationContext";
+import NotificationContainer from "./components/common/NotificationContainer";
+import ChatbotInterface from "./components/chatbot/ChatbotInterface";
+import ChatbotToggle from "./components/chatbot/ChatbotToggle";
+import AppRoutes from "./routes";
 
 const App = () => {
   return (
-    <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/login" element={<AuthPage type="login" />} />
-          <Route path="/signup" element={<AuthPage type="signup" />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </BrowserRouter>
-    </>
+    <Router>
+      <AuthProvider>
+        <WardrobeProvider>
+          <ChatbotProvider>
+            <UploadProvider>
+              <NotificationProvider>
+                <div className="min-h-screen bg-gray-50">
+                  <AppRoutes />
+                  <NotificationContainer />
+                  <ChatbotInterface />
+                  <ChatbotToggle />
+                </div>
+              </NotificationProvider>
+            </UploadProvider>
+          </ChatbotProvider>
+        </WardrobeProvider>
+      </AuthProvider>
+    </Router>
   );
 };
 

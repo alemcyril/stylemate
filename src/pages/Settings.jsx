@@ -1,138 +1,282 @@
 import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
+import { Lock, Bell, Globe, Palette, Trash2 } from "lucide-react";
 
 const Settings = () => {
-  const [email, setEmail] = useState("user@example.com");
-  const [username, setUsername] = useState("user123");
-  const [password, setPassword] = useState("");
-  const [notifications, setNotifications] = useState(true);
+  const { user, changePassword } = useAuth();
+  const { showSuccess, showError } = useNotification();
 
-  const handleSubmit = (e) => {
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const [theme, setTheme] = useState("light");
+  const [language, setLanguage] = useState("en");
+  const [notifications, setNotifications] = useState({
+    email: true,
+    push: true,
+    weather: true,
+    recommendations: true,
+  });
+
+  const handlePasswordChange = async (e) => {
     e.preventDefault();
-    // Handle form submission logic (e.g., sending data to backend)
-    console.log("Settings updated!");
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      showError("New passwords do not match");
+      return;
+    }
+
+    try {
+      await changePassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+      showSuccess("Password updated successfully");
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      showError("Failed to update password");
+    }
+  };
+
+  const handleNotificationChange = (type) => {
+    setNotifications((prev) => ({
+      ...prev,
+      [type]: !prev[type],
+    }));
+  };
+
+  const handleThemeChange = (newTheme) => {
+    setTheme(newTheme);
+    // Implement theme change logic here
+  };
+
+  const handleLanguageChange = (newLanguage) => {
+    setLanguage(newLanguage);
+    // Implement language change logic here
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <header className="bg-white shadow p-4 rounded-md mb-6">
-        <h1 className="text-2xl font-semibold text-gray-700">
-          Account Settings
-        </h1>
-      </header>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Settings</h1>
 
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow">
-        {/* Profile Information Section */}
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            Profile Information
+        {/* Password Settings */}
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <Lock className="w-5 h-5" />
+            Password Settings
           </h2>
-          <div className="space-y-4">
+          <form onSubmit={handlePasswordChange} className="space-y-4">
             <div>
-              <label
-                className="block text-gray-700 font-medium"
-                htmlFor="username"
-              >
-                Username
+              <label className="block text-sm font-medium text-gray-700">
+                Current Password
               </label>
               <input
-                type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="mt-2 w-full p-2 border border-gray-300 rounded-md"
-                placeholder="Enter your username"
+                type="password"
+                value={passwordData.currentPassword}
+                onChange={(e) =>
+                  setPasswordData({
+                    ...passwordData,
+                    currentPassword: e.target.value,
+                  })
+                }
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label
-                className="block text-gray-700 font-medium"
-                htmlFor="email"
-              >
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-2 w-full p-2 border border-gray-300 rounded-md"
-                placeholder="Enter your email address"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Password Section */}
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            Change Password
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <label
-                className="block text-gray-700 font-medium"
-                htmlFor="password"
-              >
+              <label className="block text-sm font-medium text-gray-700">
                 New Password
               </label>
               <input
                 type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-2 w-full p-2 border border-gray-300 rounded-md"
-                placeholder="Enter new password"
+                value={passwordData.newPassword}
+                onChange={(e) =>
+                  setPasswordData({
+                    ...passwordData,
+                    newPassword: e.target.value,
+                  })
+                }
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label
-                className="block text-gray-700 font-medium"
-                htmlFor="confirm-password"
-              >
-                Confirm Password
+              <label className="block text-sm font-medium text-gray-700">
+                Confirm New Password
               </label>
               <input
                 type="password"
-                id="confirm-password"
-                className="mt-2 w-full p-2 border border-gray-300 rounded-md"
-                placeholder="Confirm your password"
+                value={passwordData.confirmPassword}
+                onChange={(e) =>
+                  setPasswordData({
+                    ...passwordData,
+                    confirmPassword: e.target.value,
+                  })
+                }
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
+            </div>
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            >
+              Update Password
+            </button>
+          </form>
+        </div>
+
+        {/* Notification Settings */}
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <Bell className="w-5 h-5" />
+            Notification Settings
+          </h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">
+                Email Notifications
+              </label>
+              <button
+                onClick={() => handleNotificationChange("email")}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full ${
+                  notifications.email ? "bg-blue-600" : "bg-gray-200"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                    notifications.email ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">
+                Push Notifications
+              </label>
+              <button
+                onClick={() => handleNotificationChange("push")}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full ${
+                  notifications.push ? "bg-blue-600" : "bg-gray-200"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                    notifications.push ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">
+                Weather Updates
+              </label>
+              <button
+                onClick={() => handleNotificationChange("weather")}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full ${
+                  notifications.weather ? "bg-blue-600" : "bg-gray-200"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                    notifications.weather ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">
+                Style Recommendations
+              </label>
+              <button
+                onClick={() => handleNotificationChange("recommendations")}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full ${
+                  notifications.recommendations ? "bg-blue-600" : "bg-gray-200"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                    notifications.recommendations
+                      ? "translate-x-6"
+                      : "translate-x-1"
+                  }`}
+                />
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Notification Preferences Section */}
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            Notification Preferences
+        {/* Appearance Settings */}
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <Palette className="w-5 h-5" />
+            Appearance
           </h2>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="notifications"
-              checked={notifications}
-              onChange={() => setNotifications(!notifications)}
-              className="mr-3"
-            />
-            <label
-              htmlFor="notifications"
-              className="text-gray-700 font-medium"
-            >
-              Receive notifications about new outfit recommendations
-            </label>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Theme
+              </label>
+              <select
+                value={theme}
+                onChange={(e) => handleThemeChange(e.target.value)}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="system">System</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Language
+              </label>
+              <select
+                value={language}
+                onChange={(e) => handleLanguageChange(e.target.value)}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="flex justify-end">
+        {/* Account Deletion */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-red-600">
+            <Trash2 className="w-5 h-5" />
+            Delete Account
+          </h2>
+          <p className="text-gray-600 mb-4">
+            Once you delete your account, there is no going back. Please be
+            certain.
+          </p>
           <button
-            type="submit"
-            className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none"
+            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+            onClick={() => {
+              if (
+                window.confirm(
+                  "Are you sure you want to delete your account? This action cannot be undone."
+                )
+              ) {
+                // Implement account deletion logic here
+                showSuccess("Account deleted successfully");
+              }
+            }}
           >
-            Save Changes
+            Delete Account
           </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

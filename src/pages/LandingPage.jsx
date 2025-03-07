@@ -4,6 +4,7 @@ import Hero from "../components/landing/Hero";
 import Features from "../components/landing/Features";
 import About from "../components/landing/About";
 import Contact from "../components/landing/Contact";
+import Footer from "../components/landing/Footer";
 
 const LandingPage = () => {
   return (
@@ -21,6 +22,7 @@ const LandingPage = () => {
       <div id="Contact">
         <Contact />
       </div>
+      <Footer />
     </>
   );
 };

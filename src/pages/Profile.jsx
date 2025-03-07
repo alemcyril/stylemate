@@ -1,85 +1,169 @@
-import React from "react";
+import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
 
-const ProfilePage = () => {
+const Profile = () => {
+  const { user, updateProfile } = useAuth();
+  const { showSuccess, showError } = useNotification();
+
+  const [formData, setFormData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    bio: user?.bio || "",
+    location: user?.location || "",
+    preferences: user?.preferences || {
+      notifications: true,
+      weatherUpdates: true,
+      styleTips: true,
+    },
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await updateProfile(formData);
+      showSuccess("Profile updated successfully");
+    } catch (error) {
+      showError("Failed to update profile");
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    if (type === "checkbox") {
+      setFormData((prev) => ({
+        ...prev,
+        preferences: {
+          ...prev.preferences,
+          [name]: checked,
+        },
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-        {/* Header Section */}
-        <div className="bg-blue-600 p-6 text-white">
-          <div className="flex items-center">
-            <img
-              src="https://via.placeholder.com/100"
-              alt="Profile"
-              className="w-24 h-24 rounded-full border-4 border-white"
-            />
-            <div className="ml-4">
-              <h1 className="text-2xl font-semibold">John Doe</h1>
-              <p className="text-sm">Personal Stylist Enthusiast</p>
-            </div>
-          </div>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">
+          Profile Settings
+        </h1>
 
-        {/* Profile Details */}
-        <div className="p-6">
-          <h2 className="text-xl font-semibold text-gray-700">
-            Profile Details
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div>
-              <p className="text-gray-600">Full Name</p>
-              <p className="text-gray-800 font-medium">John Doe</p>
-            </div>
-            <div>
-              <p className="text-gray-600">Email</p>
-              <p className="text-gray-800 font-medium">john.doe@example.com</p>
-            </div>
-            <div>
-              <p className="text-gray-600">Phone</p>
-              <p className="text-gray-800 font-medium">+1 234 567 890</p>
-            </div>
-            <div>
-              <p className="text-gray-600">Location</p>
-              <p className="text-gray-800 font-medium">Nairobi, Kenya</p>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information */}
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Bio
+                </label>
+                <textarea
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleChange}
+                  rows={3}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Preferences Section */}
-        <div className="p-6 bg-gray-50">
-          <h2 className="text-xl font-semibold text-gray-700">Preferences</h2>
-          <div className="mt-4">
-            <p className="text-gray-600 mb-2">Favorite Styles</p>
-            <div className="flex flex-wrap gap-2">
-              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
-                Casual
-              </span>
-              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
-                Formal
-              </span>
-              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
-                Sporty
-              </span>
+          {/* Preferences */}
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-4">Preferences</h2>
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="notifications"
+                  checked={formData.preferences.notifications}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label className="ml-2 block text-sm text-gray-900">
+                  Enable notifications
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="weatherUpdates"
+                  checked={formData.preferences.weatherUpdates}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label className="ml-2 block text-sm text-gray-900">
+                  Receive weather updates
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="styleTips"
+                  checked={formData.preferences.styleTips}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label className="ml-2 block text-sm text-gray-900">
+                  Receive style tips
+                </label>
+              </div>
             </div>
           </div>
-          <div className="mt-6">
-            <p className="text-gray-600 mb-2">Preferred Colors</p>
-            <div className="flex flex-wrap gap-2">
-              <span className="w-8 h-8 rounded-full bg-red-500"></span>
-              <span className="w-8 h-8 rounded-full bg-blue-500"></span>
-              <span className="w-8 h-8 rounded-full bg-green-500"></span>
-            </div>
-          </div>
-        </div>
 
-        {/* Edit Profile Button */}
-        <div className="p-6 flex justify-end bg-gray-100">
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-            Edit Profile
-          </button>
-        </div>
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
 };
 
-export default ProfilePage;
+export default Profile;
